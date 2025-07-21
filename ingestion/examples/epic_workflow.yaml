@@ -1,0 +1,140 @@
+source:
+  type: epic
+  serviceName: epic_hospital
+  serviceConnection:
+    config:
+      type: Epic
+      # FHIR Server Configuration
+      fhirServerUrl: https://epicserver.hospital.org/fhir
+      fhirVersion: R4
+      
+      # Authentication Configuration
+      # Option 1: OAuth2 Authentication
+      authType: OAuth2
+      clientId: ${EPIC_CLIENT_ID}
+      clientSecret: ${EPIC_CLIENT_SECRET}
+      tokenUrl: https://epicserver.hospital.org/oauth2/token
+      scope: "system/*.read"
+      
+      # Option 2: Basic Authentication (uncomment if using)
+      # authType: BasicAuth
+      # username: ${EPIC_USERNAME}
+      # password: ${EPIC_PASSWORD}
+      
+      # Option 3: SMART on FHIR (uncomment if using)
+      # authType: SmartOnFhir
+      # clientId: ${EPIC_CLIENT_ID}
+      # clientSecret: ${EPIC_CLIENT_SECRET}
+      # tokenUrl: https://epicserver.hospital.org/oauth2/token
+      # authorizeUrl: https://epicserver.hospital.org/oauth2/authorize
+      # scope: "patient/*.read launch/patient"
+      
+      # Organization filtering (optional)
+      organizationId: "Hospital.Main"
+      
+      # Database name in OpenMetadata
+      databaseName: "epic_fhir"
+      
+      # Resource types to ingest
+      resourceTypes:
+        - Patient
+        - Encounter
+        - Observation
+        - Condition
+        - Procedure
+        - MedicationRequest
+        - Practitioner
+        - Organization
+        - Location
+        - DiagnosticReport
+        - Immunization
+        - AllergyIntolerance
+      
+      # Tag Configuration
+      tagConfiguration:
+        # Enable automatic PHI tagging
+        enablePHITags: true
+        
+        # Enable clinical category tags
+        enableClinicalTags: true
+        
+        # Enable healthcare data quality tests
+        enableDataQualityTests: true
+        
+        # Custom classifications (optional)
+        customClassifications:
+          - name: "Sensitive"
+            description: "Highly sensitive medical data"
+            tags:
+              - name: "Mental Health"
+                description: "Mental health related data"
+              - name: "Substance Use"
+                description: "Substance use disorder data"
+              - name: "Genetic"
+                description: "Genetic information"
+      
+      # Data masking for PHI
+      enableDataMasking: true
+      
+      # Performance settings
+      pageSize: 100
+      requestTimeout: 60
+      
+      # SSL Configuration (if needed)
+      # sslConfig:
+      #   verifySSL: true
+      #   caCertPath: /path/to/ca.crt
+      
+  sourceConfig:
+    config:
+      type: DatabaseMetadata
+      # Filter patterns (optional)
+      schemaFilterPattern:
+        includes:
+          - "Clinical"
+          - "Administrative"
+        excludes:
+          - "Archived"
+      
+      tableFilterPattern:
+        includes:
+          - "Patient"
+          - "Encounter"
+          - "Observation"
+          - "Condition"
+          - "Procedure"
+        excludes:
+          - ".*Test.*"
+          - ".*Archive.*"
+      
+      # Enable data profiling
+      generateSampleData: true
+      profileSample: 10.0  # Profile 10% of data
+      
+      # Enable lineage
+      includeLineage: true
+      
+      # Mark deleted entities
+      markDeletedEntities: true
+
+sink:
+  type: metadata-rest
+  config: {}
+
+workflowConfig:
+  openMetadataServerConfig:
+    hostPort: http://localhost:8585/api
+    authProvider: openmetadata
+    securityConfig:
+      jwtToken: ${OPENMETADATA_JWT_TOKEN}
+
+# Additional configuration for production deployments
+# workflowConfig:
+#   loggerLevel: INFO
+#   openMetadataServerConfig:
+#     hostPort: https://metadata.company.com/api
+#     authProvider: google
+#     securityConfig:
+#       clientId: ${GOOGLE_CLIENT_ID}
+#       secretKey: ${GOOGLE_SECRET_KEY}
+#       domain: company.com
