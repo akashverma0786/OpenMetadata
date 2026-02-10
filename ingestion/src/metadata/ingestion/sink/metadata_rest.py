@@ -30,7 +30,11 @@ from metadata.generated.schema.api.data.createDashboardDataModel import (
 from metadata.generated.schema.api.data.createDataContract import (
     CreateDataContractRequest,
 )
+from metadata.generated.schema.api.data.createGlossary import CreateGlossaryRequest
 from metadata.generated.schema.api.data.createPipeline import CreatePipelineRequest
+from metadata.generated.schema.api.domains.createDataProduct import (
+    CreateDataProductRequest,
+)
 from metadata.generated.schema.api.domains.createDomain import CreateDomainRequest
 from metadata.generated.schema.api.lineage.addLineage import AddLineageRequest
 from metadata.generated.schema.api.teams.createRole import CreateRoleRequest
@@ -210,6 +214,7 @@ class MetadataRestSink(Sink):  # pylint: disable=too-many-public-methods
                 entity_request,
                 (
                     CreateDomainRequest,
+                    CreateDataProductRequest,
                     CreateDataContractRequest,
                     CreateTeamRequest,
                     CreateContainerRequest,
@@ -217,6 +222,7 @@ class MetadataRestSink(Sink):  # pylint: disable=too-many-public-methods
                     CreateTestCaseRequest,
                     CreateTestSuiteRequest,
                     CreateTestDefinitionRequest,
+                    CreateGlossaryRequest,
                 ),
             )
         ):

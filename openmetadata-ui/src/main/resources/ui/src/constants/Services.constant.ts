@@ -497,6 +497,12 @@ export const ADVANCED_PROPERTIES = [
   'schemaRegistrySSL',
   'consumerConfigSSL',
   'verify',
+  'useNonce',
+  'disablePkce',
+  'maxClockSkew',
+  'tokenValidity',
+  'maxAge',
+  'sessionExpiry',
 ];
 
 export const PIPELINE_SERVICE_PLATFORM = 'Airflow';
