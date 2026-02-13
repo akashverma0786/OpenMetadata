@@ -35,6 +35,8 @@ class TestBurstIQMetadataIngestion(TestCase):
             username="test_user",
             password="test_password",
             realmName="test_realm",
+            biqSdzName="test_sdz",
+            biqCustomerName="test_customer",
         )
 
         # Sample dictionary data
@@ -272,12 +274,22 @@ class TestBurstIQMetadataIngestion(TestCase):
 
     def test_table_constraints_foreign_key(self):
         """Test extraction of foreign key constraints from referenced dictionaries"""
+        from unittest.mock import patch
         from metadata.ingestion.source.database.burstiq.metadata import Burstiqsource
 
         source = Mock(spec=Burstiqsource)
         source.get_table_constraints = Burstiqsource.get_table_constraints.__get__(
             source
         )
+
+        # Mock metadata and context for FQN building
+        source.metadata = Mock()
+        source.context = Mock()
+        context_data = Mock()
+        context_data.database_service = "test_service"
+        context_data.database = "test_db"
+        context_data.database_schema = "test_schema"
+        source.context.get.return_value = context_data
 
         # Create dictionary with foreign key reference
         dictionary = BurstIQDictionary(
@@ -292,14 +304,21 @@ class TestBurstIQMetadataIngestion(TestCase):
             indexes=[],
         )
 
-        # Get constraints
-        constraints = source.get_table_constraints(dictionary)
+        # Mock fqn.build to return a test FQN
+        with patch('metadata.ingestion.source.database.burstiq.metadata.fqn.build') as mock_fqn_build:
+            mock_fqn_build.return_value = "test_service.test_db.test_schema.patient.patient_id"
 
-        # Verify foreign key constraint
-        self.assertIsNotNone(constraints)
-        self.assertEqual(len(constraints), 1)
-        self.assertEqual(constraints[0].constraintType, ConstraintType.FOREIGN_KEY)
-        self.assertEqual(constraints[0].columns, ["patient_id"])
+            # Get constraints
+            constraints = source.get_table_constraints(dictionary)
+
+            # Verify foreign key constraint
+            self.assertIsNotNone(constraints)
+            self.assertEqual(len(constraints), 1)
+            self.assertEqual(constraints[0].constraintType, ConstraintType.FOREIGN_KEY)
+            self.assertEqual(constraints[0].columns, ["patient_id"])
+            # Verify the FQN was built and used (it's wrapped in FullyQualifiedEntityName)
+            self.assertEqual(len(constraints[0].referredColumns), 1)
+            self.assertEqual(constraints[0].referredColumns[0].root, "test_service.test_db.test_schema.patient.patient_id")
 
     def test_table_name_extraction(self):
         """Test table name and type extraction from dictionaries"""

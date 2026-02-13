@@ -67,6 +67,8 @@ class TestBurstIQLineage(TestCase):
                     "username": "test_user",
                     "password": "test_password",
                     "realmName": "test_realm",
+                    "biqSdzName": "test_sdz",
+                    "biqCustomerName": "test_customer",
                 }
             },
             "sourceConfig": {"config": {"type": "DatabaseLineage"}},
@@ -118,6 +120,8 @@ class TestBurstIQLineage(TestCase):
                     "username": "test_user",
                     "password": "test_password",
                     "realmName": "test_realm",
+                    "biqSdzName": "test_sdz",
+                    "biqCustomerName": "test_customer",
                 }
             },
             "sourceConfig": {"config": {"type": "DatabaseLineage"}},
@@ -158,6 +162,8 @@ class TestBurstIQLineage(TestCase):
                     "username": "test_user",
                     "password": "test_password",
                     "realmName": "test_realm",
+                    "biqSdzName": "test_sdz",
+                    "biqCustomerName": "test_customer",
                 }
             },
             "sourceConfig": {"config": {"type": "DatabaseLineage"}},
@@ -208,6 +214,8 @@ class TestBurstIQLineage(TestCase):
                     "username": "test_user",
                     "password": "test_password",
                     "realmName": "test_realm",
+                    "biqSdzName": "test_sdz",
+                    "biqCustomerName": "test_customer",
                 }
             },
             "sourceConfig": {"config": {"type": "DatabaseLineage"}},
@@ -252,6 +260,8 @@ class TestBurstIQLineage(TestCase):
                     "username": "test_user",
                     "password": "test_password",
                     "realmName": "test_realm",
+                    "biqSdzName": "test_sdz",
+                    "biqCustomerName": "test_customer",
                 }
             },
             "sourceConfig": {"config": {"type": "DatabaseLineage"}},

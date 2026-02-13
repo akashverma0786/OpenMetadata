@@ -30,6 +30,8 @@ class TestBurstIQConnection(TestCase):
             username="test_user",
             password="test_password",
             realmName="test_realm",
+            biqSdzName="test_sdz",
+            biqCustomerName="test_customer",
         )
 
         self.mock_token_response = {
@@ -49,8 +51,8 @@ class TestBurstIQConnection(TestCase):
 
         # Verify client was created
         self.assertIsNotNone(client)
-        self.assertEqual(client.username, "test_user")
-        self.assertEqual(client.realm_name, "test_realm")
+        self.assertEqual(client.config.username, "test_user")
+        self.assertEqual(client.config.realmName, "test_realm")
 
     @patch("metadata.ingestion.source.database.burstiq.client.requests.post")
     @patch("metadata.ingestion.source.database.burstiq.client.requests.request")
@@ -197,8 +199,9 @@ class TestBurstIQConnection(TestCase):
         mock_response.raise_for_status.side_effect = Exception("401 Unauthorized")
         mock_post.return_value = mock_response
 
-        # Should raise exception
+        # Should raise exception when authentication is attempted
+        client = get_connection(self.config)
         with self.assertRaises(Exception) as context:
-            get_connection(self.config)
+            client.test_authenticate()
 
         self.assertIn("Failed to authenticate", str(context.exception))

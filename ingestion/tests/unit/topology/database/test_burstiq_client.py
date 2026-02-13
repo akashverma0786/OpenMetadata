@@ -31,6 +31,8 @@ class TestBurstIQClient(TestCase):
             username="test_user",
             password="test_password",
             realmName="test_realm",
+            biqSdzName="test_sdz",
+            biqCustomerName="test_customer",
         )
 
         # Mock authentication response
@@ -49,6 +51,8 @@ class TestBurstIQClient(TestCase):
         mock_post.return_value = mock_response
 
         client = BurstIQClient(self.config)
+        # Trigger authentication explicitly
+        client.test_authenticate()
 
         # Verify authentication was called correctly
         self.assertEqual(mock_post.call_count, 1)
@@ -70,8 +74,6 @@ class TestBurstIQClient(TestCase):
         # Verify token is set
         self.assertIsNotNone(client.access_token)
         self.assertIsNotNone(client.token_expires_at)
-        self.assertEqual(client.customer_name, "test_realm")
-        self.assertEqual(client.sdz_name, "test_sdz")
 
     @patch("metadata.ingestion.source.database.burstiq.client.requests.post")
     def test_authentication_failure(self, mock_post):
@@ -80,8 +82,9 @@ class TestBurstIQClient(TestCase):
         mock_response.raise_for_status.side_effect = Exception("401 Unauthorized")
         mock_post.return_value = mock_response
 
+        client = BurstIQClient(self.config)
         with self.assertRaises(Exception) as context:
-            BurstIQClient(self.config)
+            client.test_authenticate()
 
         self.assertIn("Failed to authenticate with BurstIQ", str(context.exception))
 
@@ -247,6 +250,9 @@ class TestBurstIQClient(TestCase):
 
         client = BurstIQClient(self.config)
 
+        # Trigger initial authentication
+        client.test_authenticate()
+
         # Manually set token to expired
         client.token_expires_at = mock_now - timedelta(seconds=1)
 
@@ -345,6 +351,8 @@ class TestBurstIQClient(TestCase):
             username="test_user",
             password="test_password",
             realmName="custom_realm",
+            biqSdzName="custom_sdz",
+            biqCustomerName="custom_customer",
         )
 
         mock_response = Mock()
@@ -353,6 +361,8 @@ class TestBurstIQClient(TestCase):
         mock_post.return_value = mock_response
 
         client = BurstIQClient(custom_config)
+        # Trigger authentication
+        client.test_authenticate()
 
         # Verify custom auth server URL was used
         call_args = mock_post.call_args
