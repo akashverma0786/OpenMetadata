@@ -275,6 +275,7 @@ class TestBurstIQMetadataIngestion(TestCase):
     def test_table_constraints_foreign_key(self):
         """Test extraction of foreign key constraints from referenced dictionaries"""
         from unittest.mock import patch
+
         from metadata.ingestion.source.database.burstiq.metadata import Burstiqsource
 
         source = Mock(spec=Burstiqsource)
@@ -304,9 +305,16 @@ class TestBurstIQMetadataIngestion(TestCase):
             indexes=[],
         )
 
-        # Mock fqn.build to return a test FQN
-        with patch('metadata.ingestion.source.database.burstiq.metadata.fqn.build') as mock_fqn_build:
-            mock_fqn_build.return_value = "test_service.test_db.test_schema.patient.patient_id"
+        # Mock fqn.build to return table FQN and fqn._build to return column FQN
+        with patch(
+            "metadata.ingestion.source.database.burstiq.metadata.fqn.build"
+        ) as mock_fqn_build, patch(
+            "metadata.ingestion.source.database.burstiq.metadata.fqn._build"
+        ) as mock_fqn_private_build:
+            mock_fqn_build.return_value = "test_service.test_db.test_schema.patient"
+            mock_fqn_private_build.return_value = (
+                "test_service.test_db.test_schema.patient.patient_id"
+            )
 
             # Get constraints
             constraints = source.get_table_constraints(dictionary)
@@ -318,7 +326,14 @@ class TestBurstIQMetadataIngestion(TestCase):
             self.assertEqual(constraints[0].columns, ["patient_id"])
             # Verify the FQN was built and used (it's wrapped in FullyQualifiedEntityName)
             self.assertEqual(len(constraints[0].referredColumns), 1)
-            self.assertEqual(constraints[0].referredColumns[0].root, "test_service.test_db.test_schema.patient.patient_id")
+            self.assertEqual(
+                constraints[0].referredColumns[0].root,
+                "test_service.test_db.test_schema.patient.patient_id",
+            )
+            # Verify fqn._build was called with correct parameters
+            mock_fqn_private_build.assert_called_once_with(
+                "test_service.test_db.test_schema.patient", "patient_id", quote=False
+            )
 
     def test_table_name_extraction(self):
         """Test table name and type extraction from dictionaries"""

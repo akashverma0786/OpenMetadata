@@ -430,26 +430,29 @@ class Burstiqsource(DatabaseServiceSource):
         # Process attributes for foreign keys (reference relationships)
         for attribute in dictionary.attributes:
             if attribute.referenceDictionaryName:
-                # Build FQN for the referred column in the referenced table
-                referred_col_fqn = fqn.build(
+                # Build FQN for the referred table first
+                referred_table_fqn = fqn.build(
                     metadata=self.metadata,
                     entity_type=Table,
                     service_name=self.context.get().database_service,
                     database_name=self.context.get().database,
                     schema_name=self.context.get().database_schema,
                     table_name=attribute.referenceDictionaryName,
-                    column_name=attribute.name,  # Assuming same column name in referenced table
                 )
 
-                # Only add foreign key constraint if FQN was successfully built
-                if referred_col_fqn:
-                    table_constraints.append(
-                        TableConstraint(
-                            constraintType=ConstraintType.FOREIGN_KEY,
-                            columns=[attribute.name],
-                            referredColumns=[referred_col_fqn],
-                        )
+                # Build column FQN by appending column name to table FQN
+                if referred_table_fqn:
+                    col_fqn = fqn._build(  # pylint: disable=protected-access
+                        referred_table_fqn, attribute.name, quote=False
                     )
+                    if col_fqn:
+                        table_constraints.append(
+                            TableConstraint(
+                                constraintType=ConstraintType.FOREIGN_KEY,
+                                columns=[attribute.name],
+                                referredColumns=[FullyQualifiedEntityName(col_fqn)],
+                            )
+                        )
 
         return table_constraints if table_constraints else None
 
