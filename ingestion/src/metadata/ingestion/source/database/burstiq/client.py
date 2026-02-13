@@ -11,8 +11,6 @@
 """
 Client to interact with BurstIQ LifeGraph APIs
 """
-import base64
-import json
 import traceback
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
@@ -49,34 +47,49 @@ class BurstIQClient:
         Args:
             config: BurstIQConnection configuration
         """
-        self.realm_name = config.realmName
-        self.username = config.username
-        self.password = config.password.get_secret_value()
-        self.client_id = getattr(config, "clientId", "burst")
-
-        self.auth_server_url = getattr(config, "authServerUrl", AUTH_SERVER_BASE)
+        self.config = config
         self.api_base_url = getattr(config, "apiUrl", API_BASE_URL).rstrip("/")
 
         # Token management
         self.access_token: Optional[str] = None
         self.token_expires_at: Optional[datetime] = None
 
-        # Extract customer and SDZ names from token after authentication
-        self.customer_name: Optional[str] = None
-        self.sdz_name: Optional[str] = None
+    def test_authenticate(self):
+        """
+        Explicitly test authentication with BurstIQ.
+        This is used during test_connection to validate credentials.
 
-        # Authenticate on initialization
+        Raises:
+            Exception: If authentication fails
+        """
         self._authenticate()
 
     def _authenticate(self):
         """Authenticate with BurstIQ and get access token"""
-        token_url = f"{self.auth_server_url}/realms/{self.realm_name}/protocol/openid-connect/token"
+        # Get configuration values
+        realm_name = getattr(self.config, "realmName", None)
+        username = getattr(self.config, "username", None)
+        password = getattr(self.config, "password", None)
+
+        # Validate required fields
+        if not realm_name:
+            raise ValueError("realmName is required for authentication")
+        if not username:
+            raise ValueError("username is required for authentication")
+        if not password:
+            raise ValueError("password is required for authentication")
+
+        auth_server_url = getattr(self.config, "authServerUrl", AUTH_SERVER_BASE)
+        client_id = getattr(self.config, "clientId", "burst")
+        token_url = (
+            f"{auth_server_url}/realms/{realm_name}/protocol/openid-connect/token"
+        )
 
         payload = {
-            "client_id": self.client_id,
+            "client_id": client_id,
             "grant_type": "password",
-            "username": self.username,
-            "password": self.password,
+            "username": username,
+            "password": password.get_secret_value(),
         }
 
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
@@ -98,69 +111,34 @@ class BurstIQClient:
                 seconds=expires_in - 60
             )  # 60s buffer
 
-            # Decode token to extract customer and SDZ names
-            self._decode_and_extract_claims()
+            customer_name = getattr(self.config, "biqCustomerName", None)
+            sdz_name = getattr(self.config, "biqSdzName", None)
 
             logger.info(
                 f"Authentication successful. Token expires in {expires_in} seconds"
             )
-            logger.info(f"Customer: {self.customer_name}, SDZ: {self.sdz_name}")
+            if customer_name and sdz_name:
+                logger.info(f"Customer: {customer_name}, SDZ: {sdz_name}")
 
         except Exception as exc:
             logger.error(f"Authentication failed: {exc}")
             logger.debug(traceback.format_exc())
             raise Exception("Failed to authenticate with BurstIQ") from exc
 
-    def _decode_and_extract_claims(self):
-        """Decode JWT token and extract customer/SDZ names"""
-        if not self.access_token:
-            return
-
-        try:
-            # Decode JWT payload (second part of token)
-            parts = self.access_token.split(".")
-            if len(parts) != 3:
-                logger.warning("Invalid JWT token format")
-                return
-
-            payload = parts[1]
-            # Add padding if needed
-            padding = 4 - (len(payload) % 4)
-            if padding != 4:
-                payload += "=" * padding
-
-            decoded_bytes = base64.urlsafe_b64decode(payload)
-            decoded_token = json.loads(decoded_bytes)
-
-            # Extract customer name from issuer (realm)
-            iss = decoded_token.get("iss", "")
-            if "/realms/" in iss:
-                self.customer_name = iss.split("/realms/")[-1].strip("/")
-
-            # Extract SDZ name from audience or resource_access
-            aud = decoded_token.get("aud")
-            if aud:
-                self.sdz_name = aud if isinstance(aud, str) else aud[0]
-
-            # If not in aud, check resource_access keys
-            if not self.sdz_name:
-                resource_access = decoded_token.get("resource_access", {})
-                if resource_access:
-                    self.sdz_name = list(resource_access.keys())[0]
-
-        except Exception as exc:
-            logger.warning(f"Failed to decode token: {exc}")
-            logger.debug(traceback.format_exc())
-
     def _get_auth_header(self) -> Dict[str, str]:
         """
-        Get authentication headers with current access token
+        Get authentication headers with current access token.
+        Authenticates on first call if not already authenticated.
 
         Returns:
             Dictionary of headers
         """
+        # Authenticate if not already done (lazy authentication)
+        if not self.access_token:
+            logger.info("No access token found, authenticating...")
+            self._authenticate()
         # Check if token needs refresh
-        if self.token_expires_at and datetime.now() >= self.token_expires_at:
+        elif self.token_expires_at and datetime.now() >= self.token_expires_at:
             logger.info("Access token expired, re-authenticating...")
             self._authenticate()
 
@@ -170,11 +148,14 @@ class BurstIQClient:
             "Accept": "application/json",
         }
 
-        # Add BurstIQ-specific headers
-        if self.customer_name:
-            headers["biq_customer_name"] = self.customer_name
-        if self.sdz_name:
-            headers["biq_sdz_name"] = self.sdz_name
+        # Add BurstIQ-specific headers from config
+        customer_name = getattr(self.config, "biqCustomerName", None)
+        sdz_name = getattr(self.config, "biqSdzName", None)
+
+        if customer_name:
+            headers["biq_customer_name"] = customer_name
+        if sdz_name:
+            headers["biq_sdz_name"] = sdz_name
 
         return headers
 

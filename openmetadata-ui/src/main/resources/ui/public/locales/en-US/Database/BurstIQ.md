@@ -25,6 +25,12 @@ BurstIQ Keycloak realm name (e.g., 'ems' from https://auth.burstiq.com/realms/em
 $$
 
 $$section
-### Table Filter Pattern $(id="tableFilterPattern")
-Regex to only include/exclude dictionaries (tables) that matches the pattern.
+### BurstIQ SDZ Name $(id="biqSdzName")
+BurstIQ Secure Data Zone (SDZ) name for API requests.
 $$
+
+$$section
+### BurstIQ Customer Name $(id="biqCustomerName")
+BurstIQ customer name for API requests.
+$$
+

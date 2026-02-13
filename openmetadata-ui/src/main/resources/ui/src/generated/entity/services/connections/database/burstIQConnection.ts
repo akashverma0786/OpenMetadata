@@ -15,6 +15,14 @@
  */
 export interface BurstIQConnection {
     /**
+     * BurstIQ customer name for API requests.
+     */
+    biqCustomerName: string;
+    /**
+     * BurstIQ Secure Data Zone (SDZ) name for API requests.
+     */
+    biqSdzName: string;
+    /**
      * Password to connect to BurstIQ.
      */
     password: string;

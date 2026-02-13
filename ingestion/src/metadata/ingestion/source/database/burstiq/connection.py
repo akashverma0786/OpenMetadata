@@ -66,6 +66,10 @@ def test_connection(
         TestConnectionResult
     """
 
+    def test_authenticate():
+        """Test authentication with BurstIQ credentials"""
+        client.test_authenticate()
+
     def test_get_dictionaries():
         """Test fetching dictionaries from BurstIQ"""
         dictionaries = client.get_dictionaries(limit=1)
@@ -75,11 +79,12 @@ def test_connection(
     def test_get_edges():
         """Test fetching edges used for lineage"""
         edges = client.get_edges(limit=1)
-        if not edges:
-            raise ConnectionError("Failed to fetch edges from BurstIQ")
+        # Edges might not exist, so don't fail if empty
+        logger.info(f"Found {len(edges)} edges in BurstIQ")
 
     test_fn = {
-        "CheckAccess": test_get_dictionaries,
+        "CheckAccess": test_authenticate,
+        "GetDictionaries": test_get_dictionaries,
         "GetEdges": test_get_edges,
     }
 

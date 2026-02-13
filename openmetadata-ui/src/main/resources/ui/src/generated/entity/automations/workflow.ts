@@ -2024,6 +2024,14 @@ export interface ConfigObject {
      */
     includeSystemTables?: boolean;
     /**
+     * BurstIQ customer name for API requests.
+     */
+    biqCustomerName?: string;
+    /**
+     * BurstIQ Secure Data Zone (SDZ) name for API requests.
+     */
+    biqSdzName?: string;
+    /**
      * BurstIQ Keycloak realm name (e.g., 'ems' from https://auth.burstiq.com/realms/ems).
      */
     realmName?: string;

@@ -36,6 +36,16 @@
       "description": "BurstIQ Keycloak realm name (e.g., 'ems' from https://auth.burstiq.com/realms/ems).",
       "type": "string"
     },
+    "biqSdzName": {
+      "title": "BurstIQ SDZ Name",
+      "description": "BurstIQ Secure Data Zone (SDZ) name for API requests.",
+      "type": "string"
+    },
+    "biqCustomerName": {
+      "title": "BurstIQ Customer Name",
+      "description": "BurstIQ customer name for API requests.",
+      "type": "string"
+    },
     "tableFilterPattern": {
       "title": "Table Filter Pattern",
       "description": "Regex to only include/exclude dictionaries (tables) that matches the pattern.",
@@ -51,5 +61,5 @@
     }
   },
   "additionalProperties": false,
-  "required": ["username", "password", "realmName"]
+  "required": ["username", "password", "realmName", "biqSdzName", "biqCustomerName"]
 }
