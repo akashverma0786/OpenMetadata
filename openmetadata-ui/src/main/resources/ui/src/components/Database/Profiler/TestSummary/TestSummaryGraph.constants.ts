@@ -1,5 +1,5 @@
 /*
- *  Copyright 2025 Collate.
+ *  Copyright 2026 Collate.
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
@@ -10,25 +10,17 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-@import (reference) '../../../../styles/variables.less';
 
-.test-summary-tooltip-container {
-  max-height: 180px;
-  overflow: auto;
-  padding-right: @size-md;
+export const TEST_SUMMARY_CHART_MARGIN = {
+  top: 16,
+  bottom: 100,
+  right: 40,
+  left: 16,
+} as const;
 
-  .tooltip-date-time {
-    font-size: @font-size-base;
-    font-weight: @font-medium;
-    color: @grey-900;
-    margin-bottom: @size-xs;
-  }
+export const STATUS_DOT_RADIUS = 4;
+export const STATUS_DOT_SIZE = STATUS_DOT_RADIUS * 2;
 
-  .tooltip-separator {
-    margin: @size-xs 0;
-    border-top: 1px dashed @grey-300;
-    border-bottom: none;
-    border-left: none;
-    border-right: none;
-  }
-}
+export const TOOLTIP_OFFSET_DEFAULT = -200;
+export const TOOLTIP_OFFSET_NEAR_EDGE = -20;
+export const TOOLTIP_EDGE_THRESHOLD = 200;
