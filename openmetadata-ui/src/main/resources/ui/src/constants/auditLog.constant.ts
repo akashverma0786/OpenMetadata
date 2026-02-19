@@ -10,25 +10,26 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-@import (reference) '../../../../styles/variables.less';
 
-.test-summary-tooltip-container {
-  max-height: 180px;
-  overflow: auto;
-  padding-right: @size-md;
+import { DateFilterType } from 'Models';
 
-  .tooltip-date-time {
-    font-size: @font-size-base;
-    font-weight: @font-medium;
-    color: @grey-900;
-    margin-bottom: @size-xs;
-  }
-
-  .tooltip-separator {
-    margin: @size-xs 0;
-    border-top: 1px dashed @grey-300;
-    border-bottom: none;
-    border-left: none;
-    border-right: none;
-  }
-}
+export const AUDIT_LOG_TIME_FILTER_RANGE: DateFilterType = {
+  yesterday: {
+    days: 1,
+    title: 'label.yesterday',
+  },
+  last7days: {
+    days: 7,
+    title: 'label.last-number-of-days',
+    titleData: {
+      numberOfDays: 7,
+    },
+  },
+  last30days: {
+    days: 30,
+    title: 'label.last-number-of-days',
+    titleData: {
+      numberOfDays: 30,
+    },
+  },
+};
