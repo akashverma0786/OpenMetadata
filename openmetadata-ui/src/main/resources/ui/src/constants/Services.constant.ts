@@ -461,6 +461,8 @@ export const BETA_SERVICES = [
   DatabaseServiceType.MicrosoftFabric,
   PipelineServiceType.MicrosoftFabricPipeline,
   DatabaseServiceType.BurstIQ,
+  DatabaseServiceType.StarRocks,
+  DriveServiceType.SFTP,
   DatabaseServiceType.Informix,
 ];
 
